@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-1
+  namespace: limited
+spec:
+  replicas: 8
+  selector:
+    matchLabels:
+      app: test-1
+  template:
+    metadata:
+      labels:
+        app: test-1
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - test-1
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: test-1
+        image: apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
+        imagePullPolicy: Always
+        
+    
