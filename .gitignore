@@ -1,5 +1,6 @@
 __pycache__
 debug
+liqo/magi
 
 .envrc*
 !.envrc.example

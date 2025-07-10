@@ -10,3 +10,19 @@ export SELECTED_NODE_NAME=
 export SELECTED_NODE_IP=
 export TIME_BETWEEN_DEPLOY_DELETE=20
 export TIME_BETWEEN_DIFFERENT_DEPLOYS=10
+
+# Google Cloud Platform specific
+# This is the IP range allowed to contact the GKE cluster
+export ALLOWED_IPS=
+
+export GCP_PROJECT_NAME=
+export GCP_ZONE=
+export GCP_REGION=
+export GCP_CLUSTER_VERSION=
+export GCP_CLUSTER_NAME=
+export GCP_PROM_ZONE= # Different to overcome the limit of 8 IPs per region
+export GCP_SERVICE_ACCOUNT=
+
+# Uncomment and set the following if you are using a SOCKS proxy
+# export https_proxy="socks5://localhost:8888"
+# export http_proxy="socks5://localhost:8888"
