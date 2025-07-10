@@ -19,8 +19,11 @@ TS=${1:-'2023-05-19T07:08:20'}
 DURATION=${2-:16m}
 
 for i in "${(@f)"$(envsubst < ${QUERIES})"}"; do 
+    if [[ $i == \#* ]]; then
+        continue
+    fi
     echo "Exporting $i..."
     name="$(echo $i | cut -f 1 -d =)"
     query="$(echo $i | cut -f 2- -d =)"
-    ${STYX} --header --start ${TS} --duration ${DURATION} ${query} > "${EXPORT_FOLDER}/${name}"
+    ${STYX} --prometheus "http://$PROMETHEUS_HOST:9090/" --header --start ${TS} --duration ${DURATION} ${query} > "${EXPORT_FOLDER}/${name}"
 done
