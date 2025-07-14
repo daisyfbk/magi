@@ -36,8 +36,14 @@ SHELL
   config.vm.provider :libvirt do |q|
     q.memory = 4096
     q.cpus = 2
-    q.cpuaffinitiy 0 => '0-1', 1 => '2-3', 2 => '4,5', 3 => '6,7'
+    q.cpuaffinity 0 => '0-1', 1 => '2-3', 2 => '4,5', 3 => '6,7'
     q.default_prefix = "k8s"
+  end
+
+  config.vm.provider :virtualbox do |v|
+    v.memory = 4096
+    v.cpus = 2
+    v.customize ["modifyvm", :id, "--cpuexecutioncap", "100"]
   end
 
   config.vm.provision :shell, privileged: true, inline: $install_common_tools
