@@ -160,7 +160,7 @@ def plot_disk_network(df_disk: pd.DataFrame,
     if 'Worker2' in df or 'Worker2_x' in df:
         df = df[['Time', 'Worker2_x', 'Worker2_y']]
 
-    print(df.head())
+    # print(df.head())
     df.rename(
         columns=WORKERXY_REPLACEMENTS,
         inplace=True
@@ -173,11 +173,11 @@ def plot_disk_network(df_disk: pd.DataFrame,
     if cutoff_seconds is not None and cutoff_seconds > 0:
         df = df[df['Time'] <= cutoff_seconds]
 
-    print(df.head())
+    # print(df.head())
     df['Disk'] = df['Disk'] / 1024 / 1024
     df['Network'] = df['Network'] / 1024 / 1024
 
-    print(df.head())
+    # print(df.head())
 
     ax = df.plot(x='Time', y='Disk', linewidth=1)
     df.plot(x='Time', y='Network', ax=ax, linewidth=1.2)
@@ -365,10 +365,12 @@ def init(directory: str,
     # metadata = json.load(open(f'{directory}/metadata.json'))
 
     plots = os.listdir(data_dir)
+    if ".DS_Store" in plots:
+        plots.remove(".DS_Store")
     os.makedirs(plot_dir, exist_ok=True)
 
     plots.append('disk_w+network_r')
-
+    print(cutoff)
     if not cutoff:
         co = calculate_cutoff(data_dir)
     else:
