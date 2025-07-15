@@ -327,8 +327,8 @@ This work was partially supported by project SERICS (PE00000014), MUR National R
 The author list is the following:
 
 - [Luis Augusto Dias Knob](https://github.com/luisdknob), Fondazione Bruno Kessler - `l.diasknob@fbk.eu`
-- [Matteo Franzil](https://github.com/mfranzil), Fondazione Bruno Kessler - `mfranzil@fbk.eu`
-- Domenico Siracusa, Fondazione Bruno Kessler - `dsiracusa@fbk.eu`
+- [Matteo Franzil](https://github.com/mfranzil), University of Trento and Fondazione Bruno Kessler - `mfranzil@fbk.eu`
+- Domenico Siracusa, University of Trento and Fondazione Bruno Kessler - `dsiracusa@fbk.eu`
 
 If you wish to cite this work for scientific research, do it as follows:
 
