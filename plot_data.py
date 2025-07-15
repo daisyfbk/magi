@@ -83,7 +83,11 @@ DISKNETWORK_REPLACEMENTS = {
     '{instance="' + main_registry + ':9100",job="prometheus"}': 'Registry',
 }
 
-NETWORK_MAX = 266 # 175
+GENERIC_REPLACEMENTS = lambda x: x.replace('instance="', '') \
+        .replace(':9100"', '').replace('job="prometheus"', '') \
+        .replace('{', '').replace('}', '')
+
+NETWORK_MAX = 1000 # 175
 
 def plot_normal(df: pd.DataFrame, plot: str, plot_dir: str):
     df.rename(
@@ -95,10 +99,14 @@ def plot_normal(df: pd.DataFrame, plot: str, plot_dir: str):
     # df.drop(columns=df.columns[~df.columns.str.contains("Worker2|Time", regex=True)], inplace=True)
 
     if plot in ("disk_r", "disk_w", "network_r", "network_w"):
-        df['Master'] = df['Master'] / 1024 / 1024
-        df['Worker1'] = df['Worker1'] / 1024 / 1024
-        df['Worker2'] = df['Worker2'] / 1024 / 1024
-        df['Registry'] = df['Registry'] / 1024 / 1024
+        if 'Master' in df.columns:
+            df['Master'] = df['Master'] / 1024 / 1024
+        if 'Worker1' in df.columns:
+            df['Worker1'] = df['Worker1'] / 1024 / 1024
+        if 'Worker2' in df.columns:
+            df['Worker2'] = df['Worker2'] / 1024 / 1024
+        if 'Registry' in df.columns:
+            df['Registry'] = df['Registry'] / 1024 / 1024
 
     # df = df[(df['Time'] >= '2023-05-14 19:23:00') & (df['Time'] <= '2023-05-14 19:45:00')]
 
@@ -108,17 +116,29 @@ def plot_normal(df: pd.DataFrame, plot: str, plot_dir: str):
         },
         inplace=True
     )
-    ax = df.plot(x='Time', y='Worker')
+
+    df.rename(
+        columns=GENERIC_REPLACEMENTS,
+        inplace=True
+    )
+
     # df.plot(x='Time', y='Worker1', ax=ax)
     # df.plot(x='Time', y='Worker2', ax=ax)
     # df.plot(x='Time', y='Registry', ax=ax)
 
+    # Make time start at 0
+    df["Time"].apply(pd.to_timedelta, unit='s')
+    df["Time"] = df["Time"] - df["Time"].iloc[0]
+
     ticks = []
     labels = []
     mmax = df['Time'].max() - (df['Time'].max() % 60) + 60
+
     for i in range(0, mmax, 60):
         ticks.append(i)
-        labels.append(datetime.datetime.utcfromtimestamp(i).strftime('%M:%S'))
+        labels.append(datetime.datetime.fromtimestamp(i).strftime('%M:%S'))
+
+    ax = df.plot(x='Time', y='Worker')
     ax.set_xticks(ticks)
     ax.set_xticklabels(labels, rotation=45)
     ax.set_xlim([-0.01, mmax - 60 + 0.01])
@@ -160,7 +180,6 @@ def plot_disk_network(df_disk: pd.DataFrame,
     if 'Worker2' in df or 'Worker2_x' in df:
         df = df[['Time', 'Worker2_x', 'Worker2_y']]
 
-    # print(df.head())
     df.rename(
         columns=WORKERXY_REPLACEMENTS,
         inplace=True
@@ -229,6 +248,8 @@ def plot_worker2cpu(df: pd.DataFrame,
         columns=WORKER2_REPLACEMENTS,
         inplace=True
     )
+
+    print(df.head())
 
     for column in df.columns[1:]:
         df[column] = df[column].rolling(WINDOW, min_periods=1).mean()
@@ -370,7 +391,7 @@ def init(directory: str,
     os.makedirs(plot_dir, exist_ok=True)
 
     plots.append('disk_w+network_r')
-    print(cutoff)
+    # plots.append('worker2cpu')
     if not cutoff:
         co = calculate_cutoff(data_dir)
     else:
@@ -381,7 +402,7 @@ def init(directory: str,
 
     for plot in plots:
         sns.set_context('paper')
-        sns.set(rc={'figure.figsize': (6, 3.5), 'figure.dpi': 300, 'savefig.dpi': 300}, font_scale=1.3)
+        sns.set_theme(rc={'figure.figsize': (6, 3.5), 'figure.dpi': 300, 'savefig.dpi': 300}, font_scale=1.3)
         style = sns.axes_style("whitegrid")
         style['xtick.bottom'] = True
         style["xtick.color"] = ".8"
@@ -391,6 +412,8 @@ def init(directory: str,
         sns.set_style(style)
         sns.despine()
 
+        print(f"Plotting {plot}...")
+        
         if plot == "worker2cpu":
             sns.set_palette(["#17374d", '#4884cf', "lightgrey"])
             df = pd.read_csv(data_dir + '/' + plot, sep=';')
@@ -411,6 +434,11 @@ def init(directory: str,
                               seconds=time,
                               cutoff_seconds=co,
                               plot_dir=plot_dir)
+        else:
+            sns.set_palette(['#17374d'])
+            df = pd.read_csv(data_dir + '/' + plot, sep=';')
+            plot_normal(df, plot, plot_dir)
+
 
 
 def calculate_cutoff(data_dir):
