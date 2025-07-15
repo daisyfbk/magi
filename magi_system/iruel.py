@@ -24,7 +24,7 @@ def mkdir_callback(mkdir_lines):
                     directories[tid].append(layer)
                 # print(f"hash={__hash}, layer={layer} from tid={tid}")
         except FileNotFoundError as err:
-            print(f"Too late for hash={__hash} from tid={tid}")
+            # print(f"Too late for hash={__hash} from tid={tid}")
             continue
 
 def connect_callback(conn_lines):

@@ -137,7 +137,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.exists(args.auditfile):
-        print("File does not exist, exiting")
+        print("Audit file does not exist. Did you enable audit logging in the API server?")
         sys.exit(1)
 
     main(args)

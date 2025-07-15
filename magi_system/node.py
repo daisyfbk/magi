@@ -69,6 +69,9 @@ def port_mappings(iruellines):
             continue
 
 
+registry_domain_cache = {}
+
+
 def terminate_download(image):
     if watch_mode:
         return
@@ -91,9 +94,13 @@ def terminate_download(image):
     else:
         log.warning(f"Weird image name: {image_fullname}")
         return
-
-    registry_ip = os.popen(f"dig +short {registry_domain} | grep '.'").read().strip()
-    node_source = os.popen("hostname -I | cut -f 1 -d ' '").read().strip()
+    
+    if registry_domain not in registry_domain_cache:
+        registry_ip = os.popen(f"dig +short {registry_domain} | grep '.'").read().strip()
+        node_source = os.popen("hostname -I | cut -f 1 -d ' '").read().strip()
+        registry_domain_cache[registry_domain] = (registry_ip, node_source)
+    else:
+        registry_ip, node_source = registry_domain_cache[registry_domain]
 
     # Obtain layer information
     layer_command = "./shamshel.sh"
@@ -112,7 +119,7 @@ def terminate_download(image):
         if layer_hashes == []:
             if attempt == MAX_TERMINATION_ATTEMPTS:
                 raise Exception(f"Could not find layer hashes for {image}, result: {result}. Attempted {attempt} times")
-            time.sleep(2)
+            # time.sleep(2)
             continue 
         else:
             log.debug(f"Obtained layer hashes for {image}: {layer_hashes}")
@@ -131,7 +138,7 @@ def terminate_download(image):
     for _ in range(MAX_TERMINATION_ATTEMPTS):
         for layer in layer_hashes:
             if layer not in ports:
-                log.warning(f"Layer {layer} not found in ports (ports: {ports})")
+                # log.warning(f"Layer {layer} not found in ports (ports: {ports})")
                 continue
             layer_ports = ports[layer]
             for layer_port in layer_ports:
@@ -141,15 +148,18 @@ def terminate_download(image):
                 if len(result.split("\n")) > 1:
                     log.info(f"Terminated download of layer {layer} on port {layer_port}")  # log.info(f"Result: {result}")
             ports[layer] = []  # Empty ports for this layer
-        time.sleep(3)
+        # time.sleep(3)
 
     # command = f'netstat -apeen | grep $(pgrep containerd | xargs ps | grep "containerd$" | ' \
     #           f'cut -f 1 -d " ")/containerd | grep tcp | grep {registry_ip} | sed -E " s/ +/ /g" | ' \
     #           'cut -f 4 -d " " | cut -f 2 -d : | xargs -I {} ' \
     #           f'ss -K src {node_source} ' \
     #           'sport = {}'
-
-    queue.remove(image)  # log.info("Queue emptied due to termination of download")
+    if image in queue:
+        log.info(f"Removing {image} from queue")
+        queue.remove(image)  # log.info("Queue emptied due to termination of download")
+    else:
+        log.warning(f"Took too long to terminate download of {image}, removing from queue anyway")
 
 
 def run_flask(port):

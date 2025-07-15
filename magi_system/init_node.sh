@@ -30,23 +30,30 @@ rm -rf "${CTDSNOOP_LOG}" "${IRUEL_LOG}" "${MKDIRSNOOP_LOG}" "${TCPCONNECT_LOG}"
 touch "${CTDSNOOP_LOG}" "${IRUEL_LOG}" "${MKDIRSNOOP_LOG}" "${TCPCONNECT_LOG}"
 
 # Assure that Go 1.20 is installed on the system
-install_go=0
-if which go &>/dev/null; then
+if [[ -f /usr/local/go/bin/go ]]; then
+    # Check version
+    if [[ $(/usr/local/go/bin/go version) =~ go1.20 ]]; then
+        echo "Go 1.20 is installed"
+        GO=/usr/local/go/bin/go
+    else
+        echo "Go 1.20 is not installed or not in the path."
+        exit 1
+    fi
+elif command -v go &>/dev/null; then
     # Check version
     if [[ $(go version) =~ go1.20 ]]; then
         echo "Go 1.20 is installed"
-    else
-        echo "Go 1.20 is not installed..."
-        install_go=1
+        GO=$(which go)
+    else 
+        echo "Go 1.20 is not installed or not in the path."
+        exit 1
     fi
 else
     echo "Go is not installed, exiting..."
-    install_go=1
     exit 1
 fi
 
 # Assure that containerdsnoop is installed on the system
-install_containerdsnoop=0
 if [[ -f "containerdsnoop/containerdsnoop" ]]; then
     echo "containerdsnoop is installed"
 else
@@ -54,9 +61,11 @@ else
     # Attempt to compile it
     if [[ -d "containerdsnoop" ]]; then
         echo "Attempting to compile containerdsnoop..."
-        cd containerdsnoop && go build . && cd ..
+        (cd containerdsnoop; $GO build .; cd ..) || {
+            echo "Failed to compile containerdsnoop, exiting..."
+            exit 1
+        }
     else
-        install_containerdsnoop=1
         echo "containerdsnoop folder not found, you need to install it manually."
         exit 1
     fi
@@ -101,7 +110,7 @@ else
         export PATH=$PATH:/home/vagrant/go/bin
     else
         echo "bbolt is not installed, installing..."
-        go install go.etcd.io/bbolt/cmd/bbolt@v1.3.7
+         $GO install go.etcd.io/bbolt/cmd/bbolt@v1.3.7
     fi
 fi
 
@@ -116,9 +125,9 @@ sleep 5
 pid=$!
 
 echo "Bringing out the snoopers..."
-./imagesnoop/mkdirsnoop -P $(pgrep containerd$) -f $MKDIRSNOOP_LOG &
+python3 imagesnoop/mkdirsnoop.py -P $(pgrep containerd$) -f $MKDIRSNOOP_LOG &
 pid="$pid $!"
-./imagesnoop/tcpconnect -P $(pgrep containerd$) -f $TCPCONNECT_LOG &
+python3 imagesnoop/tcpconnect.py -P $(pgrep containerd$) -f $TCPCONNECT_LOG &
 pid="$pid $!"
 sleep 6
 
