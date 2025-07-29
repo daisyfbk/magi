@@ -13,7 +13,7 @@ wget https://github.com/prometheus/node_exporter/releases/download/v$VERSION/nod
 tar xvfz node_exporter-$VERSION.linux-amd64.tar.gz
 
 if [[ -n "$USE_GCLOUD" ]]; then
-    gcloud compute scp --recurse --zone europe-west1-b node_exporter-$VERSION.linux-amd64 $TARGET:~/
+    gcloud compute scp --recurse --zone "$GCP_ZONE" node_exporter-$VERSION.linux-amd64 $TARGET:~/
 else
     scp -r node_exporter-$VERSION.linux-amd64 $TARGET:
 fi
@@ -21,7 +21,7 @@ fi
 # Run remotely in background
 command="cd node_exporter-*.linux-amd64; nohup ./node_exporter > ~/node-exporter.log 2>&1 & echo \$! > ~/node-exporter.pid; disown" 
 if [[ -n "$USE_GCLOUD" ]]; then
-    gcloud compute ssh --zone europe-west1-b "$TARGET" -- "$command"
+    gcloud compute ssh --zone "$GCP_ZONE" "$TARGET" -- "$command"
 else
     ssh $SSH_OPTIONS "$TARGET" "$command"
 fi
