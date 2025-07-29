@@ -1,10 +1,9 @@
 #!/bin/bash
 
-# First:  apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu
-# Uncompressed size: 947 MB
+# First:  pytorch/pytorch:2.7.1-cuda11.8-cudnn9-runtime  # Uncompressed size: 3106 MB
 
 images=(
-    pytorch/pytorch:2.7.1-cuda11.8-cudnn9-runtime # Uncompressed size: 3106 MB
+    apache/spark:4.0.0-scala2.13-java17-python3-r-ubuntu # Uncompressed size: 947 MB
     jupyter/scipy-notebook:x86_64-python-3.11.6 # Uncompressed size: 1255 MB
     tensorflow/serving:latest-gpu # Uncompressed size: 3636 MB
     jupyter/tensorflow-notebook:x86_64-ubuntu-22.04 # Uncompressed size: 1780 MB
@@ -16,7 +15,7 @@ images=(
 )
 
 kubectl apply -n limited -f deployment.yaml 
-sleep 10
+sleep 20
 
 for image in "${images[@]}"; do
     echo "Image: $image"
@@ -32,7 +31,7 @@ for image in "${images[@]}"; do
     # sleep 5
     # kubectl delete pod -n limited "$pod_name" 
     kubectl patch deployment -n limited test-1 --type='json' -p="[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/image\", \"value\": \"$image\"}]"
-    sleep 10
+    sleep 20
     echo "Done with $image"
     echo "-----------------------------------"
 done
