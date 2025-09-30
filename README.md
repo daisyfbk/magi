@@ -3,10 +3,19 @@
 This repository contains the following folders:
 
 - `cluster`: contains the Vagrantfile used to create the cluster;
+- `kfiles`: contains the Kubernetes manifests used in the experiments:
+  - `audit`: contains the audit policy used for enabling auditing in the cluster;
+  - `images`: contains Bash scripts that generate the images used in the experiments;
+  - `limited`: contains the actual manifests that use the images generated in `images` and deploy Pods to carry out the attack;
+- `liqo`: files necessary for replicating experiments using a Liqo deployment [see website](https://liqo.io/);
+- `magi_system`: contains the MAGI system, our PoC implementation of the mitigation system. See the corresponding README for more details;
+- `raspberry`: contains the files for replicating the experiments on a Raspberry Pi cluster;
 - `registry`: contains the Vagrantfile and docker-compose files used to create the registry;
-- `kfiles`: contains the Kubernetes manifests used in the experiments;
-- `magi_system`: contains the MAGI system, our PoC implementation of the mitigation system;
-- `results`: contains the results and the plots of the experiments.
+- `results`: contains a selection of results and the plots of the experiments.
+
+In the 
+
+Some other folders may be present, but if not described here, they are not relevant for the experiments.
 
 In the root folder, you will furthermore find some helper scripts we used for exporting data from the cluster and the registry and for plotting the results.
 
@@ -319,6 +328,10 @@ This software is licensed under the Apache 2.0 license. See [LICENSE](LICENSE) f
 ## Contributing
 
 All contributions are welcome. If you have any doubts or questions feel free to open an issue or contact the maintainers.
+
+## Further material
+
+A demo on how MAGI works has been presented within the [FLUIDOS](https://fluidos.eu/) HORIZON-funded project. The video is available at the following link: [https://www.youtube.com/watch?v=OsGgJFBQRfs](https://www.youtube.com/watch?v=OsGgJFBQRfs).
 
 ## Acknowledgements
 
